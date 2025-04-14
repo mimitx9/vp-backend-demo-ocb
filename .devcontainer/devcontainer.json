@@ -23,7 +23,7 @@
       }
     }
   },
-  "forwardPorts": [9090],
+  "forwardPorts": [8080],
   "postCreateCommand": "mvn dependency:go-offline",
   "remoteUser": "vscode",
   "hostRequirements": {
