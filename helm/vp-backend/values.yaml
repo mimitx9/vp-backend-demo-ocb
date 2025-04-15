@@ -1,0 +1,6 @@
+ccp:
+  image: vp-backend-ccp:latest
+  port: 8080
+ocb:
+  image: vp-backend-ocb:latest
+  port: 8080

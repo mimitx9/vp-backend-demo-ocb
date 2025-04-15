@@ -4,10 +4,10 @@ target/
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
-ocb/.idea/modules.xml
+.idea/modules.xml
 .idea/jarRepositories.xml
-ocb/.idea/compiler.xml
-ocb/.idea/libraries/
+.idea/compiler.xml
+.idea/libraries/
 *.iws
 *.iml
 *.ipr
@@ -36,3 +36,13 @@ build/
 
 ### Mac OS ###
 .DS_Store
+# Khóa RSA
+src/main/resources/keys/*.pem
+
+# H2 database files
+*.db
+*.mv.db
+*.trace.db
+
+# Maven
+.m2/

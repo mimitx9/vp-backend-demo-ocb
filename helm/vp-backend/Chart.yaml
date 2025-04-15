@@ -1,0 +1,4 @@
+apiVersion: v2
+name: vp-backend
+description: Helm chart for VP Backend applications
+version: 0.1.0

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ccp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ccp
+  template:
+    metadata:
+      labels:
+        app: ccp
+    spec:
+      containers:
+        - name: ccp
+          image: {{ .Values.ccp.image }}
+          ports:
+            - containerPort: {{ .Values.ccp.port }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocb
+  template:
+    metadata:
+      labels:
+        app: ocb
+    spec:
+      containers:
+        - name: ocb
+          image: {{ .Values.ocb.image }}
+          ports:
+            - containerPort: {{ .Values.ocb.port }}
