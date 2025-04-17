@@ -5,22 +5,13 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import jakarta.annotation.PostConstruct;
+import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,35 +21,11 @@ import java.util.function.Function;
 @Slf4j
 public class JwtUtil {
 
-    @Value("${jwt.private-key-path}")
-    private String privateKeyPath;
-
-    @Value("${jwt.public-key-path}")
-    private String publicKeyPath;
+    @Value("${jwt.secret}")
+    private String secret;
 
     @Value("${jwt.expiration}")
     private long expiration;
-
-    private final ResourceLoader resourceLoader;
-
-    private PrivateKey privateKey;
-    private PublicKey publicKey;
-
-    public JwtUtil(ResourceLoader resourceLoader) {
-        this.resourceLoader = resourceLoader;
-    }
-
-    @PostConstruct
-    public void init() {
-        try {
-            privateKey = loadPrivateKey(privateKeyPath);
-            publicKey = loadPublicKey(publicKeyPath);
-            log.info("RSA keys loaded successfully");
-        } catch (Exception e) {
-            log.error("Failed to load RSA keys", e);
-            throw new RuntimeException("Failed to initialize JWT util", e);
-        }
-    }
 
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
@@ -80,8 +47,13 @@ public class JwtUtil {
                 .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
+    }
+
+    private Key getSigningKey() {
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -91,7 +63,7 @@ public class JwtUtil {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(publicKey)
+                .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -124,7 +96,7 @@ public class JwtUtil {
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(publicKey)
+                    .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token);
             return !isTokenExpired(token);
@@ -137,83 +109,5 @@ public class JwtUtil {
     private boolean isTokenExpired(String token) {
         final Date expiration = extractExpiration(token);
         return expiration.before(new Date());
-    }
-
-    private PrivateKey loadPrivateKey(String path) throws Exception {
-        try {
-            // Thử load như classpath resource
-            Resource resource = resourceLoader.getResource("classpath:" + path);
-            if (resource.exists()) {
-                return loadPrivateKeyFromResource(resource);
-            }
-
-            // Nếu không tìm thấy trong classpath, thử load từ file system
-            String privateKeyPEM = new String(Files.readAllBytes(Paths.get(path)))
-                    .replace("-----BEGIN PRIVATE KEY-----", "")
-                    .replace("-----END PRIVATE KEY-----", "")
-                    .replaceAll("\\s", "");
-
-            byte[] privateKeyDER = Base64.getDecoder().decode(privateKeyPEM);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyDER));
-        } catch (Exception e) {
-            log.error("Failed to load private key from: {}", path, e);
-            throw e;
-        }
-    }
-
-    private PublicKey loadPublicKey(String path) throws Exception {
-        try {
-            // Thử load như classpath resource
-            Resource resource = resourceLoader.getResource("classpath:" + path);
-            if (resource.exists()) {
-                return loadPublicKeyFromResource(resource);
-            }
-
-            // Nếu không tìm thấy trong classpath, thử load từ file system
-            String publicKeyPEM = new String(Files.readAllBytes(Paths.get(path)))
-                    .replace("-----BEGIN PUBLIC KEY-----", "")
-                    .replace("-----END PUBLIC KEY-----", "")
-                    .replaceAll("\\s", "");
-
-            byte[] publicKeyDER = Base64.getDecoder().decode(publicKeyPEM);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            return keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyDER));
-        } catch (Exception e) {
-            log.error("Failed to load public key from: {}", path, e);
-            throw e;
-        }
-    }
-
-    private PrivateKey loadPrivateKeyFromResource(Resource resource) throws Exception {
-        try {
-            String privateKeyPEM = new String(resource.getInputStream().readAllBytes())
-                    .replace("-----BEGIN PRIVATE KEY-----", "")
-                    .replace("-----END PRIVATE KEY-----", "")
-                    .replaceAll("\\s", "");
-
-            byte[] privateKeyDER = Base64.getDecoder().decode(privateKeyPEM);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKeyDER));
-        } catch (IOException e) {
-            log.error("Failed to load private key from resource", e);
-            throw e;
-        }
-    }
-
-    private PublicKey loadPublicKeyFromResource(Resource resource) throws Exception {
-        try {
-            String publicKeyPEM = new String(resource.getInputStream().readAllBytes())
-                    .replace("-----BEGIN PUBLIC KEY-----", "")
-                    .replace("-----END PUBLIC KEY-----", "")
-                    .replaceAll("\\s", "");
-
-            byte[] publicKeyDER = Base64.getDecoder().decode(publicKeyPEM);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            return keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyDER));
-        } catch (IOException e) {
-            log.error("Failed to load public key from resource", e);
-            throw e;
-        }
     }
 }
