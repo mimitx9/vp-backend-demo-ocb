@@ -1,7 +1,10 @@
 -- Initial demo data for users table
 INSERT INTO users (username, email, first_name, last_name, ciam_id, last_login, created_at, updated_at)
 VALUES
-    ('testuser', 'test@example.com', 'Test', 'User', 'ciam_123456', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('johndoe', 'john.doe@example.com', 'John', 'Doe', 'ciam_654321', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
--- Don't add session data as these would be created dynamically during runtime
+    ('testuser1', 'test1@example.com', 'Test 1', 'User 1', 'ciam_123456', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('testuser2', 'test2@example.com', 'Test 2', 'User 2', 'ciam_123456', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('testuser3', 'test3@example.com', 'Test 3', 'User 3', 'ciam_123456', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('testuser4', 'test4@example.com', 'Test 4', 'User 4', 'ciam_123456', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('testuser5', 'test5@example.com', 'Test 5', 'User 5', 'ciam_123456', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('testuser6', 'test6@example.com', 'Test 6', 'User 6', 'ciam_123456', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('testuser7', 'test7@example.com', 'Test 7', 'User 7', 'ciam_123456', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
