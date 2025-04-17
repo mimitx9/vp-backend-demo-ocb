@@ -17,10 +17,11 @@
     "RequestMappingsPanelWidth0": "75",
     "RequestMappingsPanelWidth1": "75",
     "Spring Boot.CcpBackendApplication.executor": "Run",
+    "Spring Boot.OcbApplication.executor": "Run",
     "node.js.selected.package.tslint": "(autodetect)"
   }
 }]]></component>
-  <component name="RunManager" selected="Spring Boot.CcpBackendApplication">
+  <component name="RunManager" selected="Spring Boot.OcbApplication">
     <configuration name="CcpBackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
       <module name="ccp-backend" />

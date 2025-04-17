@@ -37,8 +37,6 @@ public class AuthService {
         log.debug("Authenticating user: {}", username);
 
         Optional<User> userOpt = userRepository.findByUsername(username);
-
-        // User not found
         if (userOpt.isEmpty()) {
             log.debug("User not found: {}", username);
             return AuthResponse.builder()
@@ -50,7 +48,6 @@ public class AuthService {
 
         User user = userOpt.get();
 
-        // Check if account is locked
         if (user.isAccountLocked()) {
             log.debug("Account locked for user: {}", username);
             return AuthResponse.builder()
@@ -60,19 +57,7 @@ public class AuthService {
                     .build();
         }
 
-        // Check password
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            // Increment login attempts
-            user.setLoginAttempts(user.getLoginAttempts() + 1);
-
-            // Lock account after 5 failed attempts
-            if (user.getLoginAttempts() >= 5) {
-                user.setAccountLocked(true);
-                log.debug("Account locked after 5 failed attempts for user: {}", username);
-            }
-
-            userRepository.save(user);
-
             return AuthResponse.builder()
                     .authenticated(false)
                     .message("Invalid credentials")
@@ -80,13 +65,6 @@ public class AuthService {
                     .build();
         }
 
-        // Authentication successful
-        // Reset login attempts
-        user.setLoginAttempts(0);
-        user.setLastLogin(LocalDateTime.now());
-        userRepository.save(user);
-
-        // Calculate password age
         int passwordAgeDays = calculatePasswordAge(user);
 
         log.debug("Authentication successful for user: {}, password age: {} days", username, passwordAgeDays);
