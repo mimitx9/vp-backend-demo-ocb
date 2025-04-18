@@ -37,7 +37,7 @@ public class AuthController {
      */
     @GetMapping("/login")
     public RedirectView login(@RequestParam(required = false) String redirectUrl) {
-        String baseCallbackUrl = "http://localhost:8080/api/v1/auth/callback";
+        String baseCallbackUrl = "http://localhost:8081/api/v1/auth/callback";
 
         // Add state parameter with redirectUrl if provided
         String state = redirectUrl != null ? redirectUrl : "/dashboard";
@@ -66,7 +66,7 @@ public class AuthController {
             log.debug("Received callback with code: {} and state: {}", code, state);
 
             // Base callback URL must match exactly what was sent to CIAM
-            String redirectUri = "http://localhost:8080/api/v1/auth/callback";
+            String redirectUri = "http://localhost:8081/api/v1/auth/callback";
 
             // Process authorization code and create session
             String redirectUrl = authService.handleAuthorizationCallback(code, redirectUri, request, response);
