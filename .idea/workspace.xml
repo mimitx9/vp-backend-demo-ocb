@@ -18,9 +18,20 @@
     "RequestMappingsPanelWidth1": "75",
     "Spring Boot.CcpBackendApplication.executor": "Run",
     "Spring Boot.OcbApplication.executor": "Run",
+    "last_opened_file_path": "/Users/duc/Downloads/backend-demo-ocb/ocb/src/main/java/com/ocb/controller",
     "node.js.selected.package.tslint": "(autodetect)"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/ocb/src/main/java/com/ocb/controller" />
+      <recent name="$PROJECT_DIR$/ocb/src/main/java/com/ocb/security" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.ocb.dto" />
+      <recent name="com.ocb.service" />
+    </key>
+  </component>
   <component name="RunManager" selected="Spring Boot.OcbApplication">
     <configuration name="CcpBackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
