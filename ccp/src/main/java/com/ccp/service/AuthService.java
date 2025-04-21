@@ -15,10 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -125,6 +122,7 @@ public class AuthService {
         try {
             ResponseEntity<TokenResponse> response = restTemplate.postForEntity(tokenUri, request, TokenResponse.class);
             log.debug("Token exchange response: {}", response.getStatusCode());
+            log.info("Access token: {}", response.getBody().getAccessToken());
             return response.getBody();
         } catch (Exception e) {
             log.error("Error exchanging code for token: {}", e.getMessage(), e);
@@ -137,12 +135,19 @@ public class AuthService {
      */
     private UserInfoDto getUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
+        headers.setBearerAuth(accessToken);  // Đặt Bearer token vào header
 
-        HttpEntity<String> request = new HttpEntity<>(headers);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
         try {
-            ResponseEntity<UserInfoDto> response = restTemplate.getForEntity(userInfoUri, UserInfoDto.class, request);
+            // Sử dụng exchange thay vì getForEntity để có thể truyền headers
+            ResponseEntity<UserInfoDto> response = restTemplate.exchange(
+                    userInfoUri,
+                    HttpMethod.GET,
+                    entity,
+                    UserInfoDto.class
+            );
+
             log.debug("User info response: {}", response.getStatusCode());
             return response.getBody();
         } catch (Exception e) {
