@@ -25,7 +25,8 @@ public class UserService implements UserDetailsService {
         UserProfileDto profile = new UserProfileDto();
         profile.setId(user.getId());
         profile.setUsername(user.getUsername());
-        profile.setFullName(user.getFullName());
+        profile.setLastName(user.getLastName());
+        profile.setFirstName(user.getFirstName());
         profile.setEmail(user.getEmail());
         return profile;
     }

@@ -14,7 +14,8 @@ public class AuthResponse {
     private boolean authenticated;
     private String username;
     private String email;
-    private String fullName;
+    private String firstName;
+    private String lastName;
     private Integer passwordAgeDays;
     private String message;
     private String errorCode;

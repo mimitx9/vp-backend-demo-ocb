@@ -73,7 +73,8 @@ public class AuthService {
                 .authenticated(true)
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .fullName(user.getFullName())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
                 .passwordAgeDays(passwordAgeDays)
                 .message("Authentication successful")
                 .build();
