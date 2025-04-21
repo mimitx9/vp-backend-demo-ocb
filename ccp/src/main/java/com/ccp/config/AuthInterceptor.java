@@ -42,7 +42,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                     if (jwtUtil.validateToken(sessionToken)) {
                         if (jwtUtil.isTokenExpiringSoon(sessionToken)) {
                             try {
-                                Long userId = jwtUtil.extractUserId(sessionToken);
+                                String userId = jwtUtil.extractUsername(sessionToken);
                                 authService.refreshUserSession(userId, request, response);
                                 log.debug("Session refreshed for user: {}", userId);
                             } catch (Exception e) {

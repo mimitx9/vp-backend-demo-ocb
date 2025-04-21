@@ -29,13 +29,13 @@ public class JwtUtil {
 
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", user.getCiamId()); // Dùng ciamId làm subject
+        // Không lưu id
         claims.put("username", user.getUsername());
         claims.put("email", user.getEmail());
         claims.put("firstName", user.getFirstName());
         claims.put("lastName", user.getLastName());
 
-        return createToken(claims, user.getUsername());
+        return createToken(claims, user.getUsername()); // Username là subject
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
@@ -75,10 +75,6 @@ public class JwtUtil {
 
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
-    }
-
-    public Long extractUserId(String token) {
-        return extractClaim(token, claims -> ((Number) claims.get("id")).longValue());
     }
 
     public String extractEmail(String token) {

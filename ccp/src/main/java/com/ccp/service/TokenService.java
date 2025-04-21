@@ -45,16 +45,17 @@ public class TokenService {
     /**
      * Get cached access token for a user
      */
-    public String getAccessToken(Long userId) {
-        return cacheUtil.getAccessToken(userId.toString());
+    public String getAccessToken(String username) {
+        return cacheUtil.getAccessToken(username);
     }
+
 
     /**
      * Refresh access token using refresh token
      */
     @Transactional
-    public String refreshAccessToken(Long userId) {
-        User user = userRepository.findById(userId)
+    public String refreshAccessToken(String userId) {
+        User user = userRepository.findByUsername(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Find active session with refresh token

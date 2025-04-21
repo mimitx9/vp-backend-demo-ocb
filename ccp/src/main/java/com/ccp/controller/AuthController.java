@@ -132,7 +132,7 @@ public class AuthController {
 
         if (sessionToken != null && authService.validateSessionToken(sessionToken)) {
             result.put("authenticated", true);
-            result.put("userId", authService.extractUserIdFromToken(sessionToken));
+            result.put("userId", authService.extractUsernameFromToken(sessionToken));
         } else {
             result.put("authenticated", false);
         }
@@ -172,7 +172,7 @@ public class AuthController {
 
         Map<String, String> result = new HashMap<>();
         if (sessionToken != null && authService.validateSessionToken(sessionToken)) {
-            Long userId = authService.extractUserIdFromToken(sessionToken);
+            String userId = authService.extractUsernameFromToken(sessionToken);
             try {
                 authService.refreshUserSession(userId, request, response);
                 result.put("message", "Token refreshed successfully");

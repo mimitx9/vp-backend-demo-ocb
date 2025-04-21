@@ -81,10 +81,9 @@ public class AuthService {
             throw new RuntimeException("Failed to exchange code for token");
         }
 
-        // 2. Get user info from token or decode JWT
-        // Có thể sử dụng userInfo hoặc decode JWT token để lấy thông tin
+        // 2. Get user info from token
         UserInfoDto userInfo = getUserInfo(tokenResponse.getAccessToken());
-        if (userInfo == null || userInfo.getSub() == null) {
+        if (userInfo == null || userInfo.getPreferredUsername() == null) {
             throw new RuntimeException("Failed to get user info");
         }
 
@@ -95,7 +94,6 @@ public class AuthService {
                 .email(userInfo.getEmail())
                 .firstName(userInfo.getGivenName())
                 .lastName(userInfo.getFamilyName())
-                .lastLogin(LocalDateTime.now())
                 .build();
 
         // 4. Generate JWT token with user info
@@ -105,13 +103,7 @@ public class AuthService {
         setSessionCookie(response, sessionToken);
 
         // 6. Store access token in cache for later use
-        cacheUtil.storeAccessToken(userInfo.getSub(), tokenResponse.getAccessToken());
-
-        // Nếu bạn cần lưu refresh token
-        if (tokenResponse.getRefreshToken() != null) {
-            // Lưu refresh token vào cache hoặc database session
-            // cacheUtil.storeRefreshToken(userInfo.getSub(), tokenResponse.getRefreshToken());
-        }
+        cacheUtil.storeAccessToken(userInfo.getPreferredUsername(), tokenResponse.getAccessToken());
 
         // 7. Return redirect URL
         return "/dashboard";
@@ -269,8 +261,8 @@ public class AuthService {
     /**
      * Extract user ID from session token
      */
-    public Long extractUserIdFromToken(String token) {
-        return jwtUtil.extractUserId(token);
+    public String extractUsernameFromToken(String token) {
+        return jwtUtil.extractUsername(token);
     }
 
     /**
@@ -279,7 +271,7 @@ public class AuthService {
     @Transactional
     public void logout(String sessionToken, HttpServletResponse response) {
         if (sessionToken != null && jwtUtil.validateToken(sessionToken)) {
-            Long userId = jwtUtil.extractUserId(sessionToken);
+            String userId = jwtUtil.extractUsername(sessionToken);
 
             // Invalidate access token in cache
             cacheUtil.invalidateAccessToken(userId.toString());
@@ -296,7 +288,7 @@ public class AuthService {
             response.addCookie(cookie);
 
             // Mark session as inactive in database
-            User user = userRepository.findById(userId).orElse(null);
+            User user = userRepository.findByUsername(userId).orElse(null);
             if (user != null) {
                 // Instead of trying to find the exact session, we can just invalidate all active sessions
                 sessionRepository.findByUserAndActiveTrue(user).forEach(session -> {
@@ -311,17 +303,13 @@ public class AuthService {
      * Refresh user session
      */
     @Transactional
-    public void refreshUserSession(Long userId, HttpServletRequest request, HttpServletResponse response) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void refreshUserSession(String username, HttpServletRequest request, HttpServletResponse response) {
+        User user = User.builder()
+                .username(username)
+                .build();
 
-        // Refresh access token
-        String newAccessToken = tokenService.refreshAccessToken(userId);
-
-        // Generate new session token
         String newSessionToken = jwtUtil.generateToken(user);
 
-        // Set new session cookie
         setSessionCookie(response, newSessionToken);
     }
 }

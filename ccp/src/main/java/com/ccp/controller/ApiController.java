@@ -61,19 +61,19 @@ public class ApiController {
      */
     @GetMapping("/example-external-api-call")
     public ResponseEntity<Map<String, String>> callExternalApi(HttpServletRequest request) {
-        // Get userId from request attribute (set by AuthInterceptor)
-        Long userId = (Long) request.getAttribute("userId");
-        if (userId == null) {
+        // Get username from request attribute (set by AuthInterceptor)
+        String username = (String) request.getAttribute("username");
+        if (username == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
 
-        // Get access token from cache
-        String accessToken = tokenService.getAccessToken(userId);
+        // Get access token from cache using username
+        String accessToken = tokenService.getAccessToken(username);
 
         if (accessToken == null) {
             // Try to refresh the token if it's not in cache
             try {
-                accessToken = tokenService.refreshAccessToken(userId);
+                accessToken = tokenService.refreshAccessToken(username);
             } catch (Exception e) {
                 log.error("Failed to refresh access token: {}", e.getMessage(), e);
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session expired, please login again");
