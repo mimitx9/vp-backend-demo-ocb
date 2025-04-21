@@ -19,6 +19,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -37,10 +38,13 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+
 import javax.net.ssl.SSLContext;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -139,32 +143,14 @@ public class AuthService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         try {
-            // Tạo một SslContext mới bỏ qua xác thực
-            TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
-            SSLContext sslContext = SSLContexts.custom()
-                    .loadTrustMaterial(null, acceptingTrustStrategy)
-                    .build();
-            SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+            // Tạo một RestTemplate đơn giản bỏ qua xác thực SSL
+            SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+            requestFactory.setConnectTimeout(5000);
+            requestFactory.setReadTimeout(5000);
 
-            Registry<ConnectionSocketFactory> socketFactoryRegistry =
-                    RegistryBuilder.<ConnectionSocketFactory>create()
-                            .register("https", socketFactory)
-                            .register("http", new PlainConnectionSocketFactory())
-                            .build();
+            // Vô hiệu hóa xác thực SSL trực tiếp ở JVM
+            System.setProperty("javax.net.ssl.trustStore", "NONE");
 
-            BasicHttpClientConnectionManager connectionManager =
-                    new BasicHttpClientConnectionManager(socketFactoryRegistry);
-
-            CloseableHttpClient httpClient = HttpClients.custom()
-                    .setSSLSocketFactory(socketFactory)
-                    .setConnectionManager(connectionManager)
-                    .build();
-
-            // Tạo RequestFactory cho RestTemplate
-            HttpComponentsClientHttpRequestFactory requestFactory =
-                    new HttpComponentsClientHttpRequestFactory();
-
-            // Tạo RestTemplate mới với cấu hình SSL tùy chỉnh
             RestTemplate sslRestTemplate = new RestTemplate(requestFactory);
 
             ResponseEntity<TokenResponse> response = sslRestTemplate.postForEntity(tokenUri, request, TokenResponse.class);
