@@ -25,26 +25,28 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // Skip for authentication endpoints
         String requestPath = request.getServletPath();
         if (requestPath.startsWith("/auth/") || requestPath.equals("/auth")) {
             return true;
         }
 
-        // Check session token
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (cookieName.equals(cookie.getName())) {
                     String sessionToken = cookie.getValue();
 
-                    // Check if token is about to expire and refresh if needed
+                    // Check if token is valid
                     if (jwtUtil.validateToken(sessionToken)) {
+                        // Thêm dòng này: đặt username vào request attribute
+                        String username = jwtUtil.extractUsername(sessionToken);
+                        request.setAttribute("username", username);
+
+                        // Check if token is about to expire and refresh if needed
                         if (jwtUtil.isTokenExpiringSoon(sessionToken)) {
                             try {
-                                String userId = jwtUtil.extractUsername(sessionToken);
-                                authService.refreshUserSession(userId, request, response);
-                                log.debug("Session refreshed for user: {}", userId);
+                                authService.refreshUserSession(username, request, response);
+                                log.debug("Session refreshed for user: {}", username);
                             } catch (Exception e) {
                                 log.error("Failed to refresh session: {}", e.getMessage());
                             }

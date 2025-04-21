@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,13 +36,13 @@ public class ApiController {
     @GetMapping("/profile")
     public ResponseEntity<Map<String, Object>> getUserProfile(HttpServletRequest request) {
         // Get userId from request attribute (set by AuthInterceptor)
-        Long userId = (Long) request.getAttribute("userId");
-        if (userId == null) {
+        String username = (String) request.getAttribute("username");
+        if (username == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
 
         // Get user from database
-        User user = userService.getUserById(userId)
+        User user = userService.getUserByUsername(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         // Create response
