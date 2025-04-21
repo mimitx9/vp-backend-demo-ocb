@@ -1,5 +1,7 @@
 package com.ccp.config;
 
+import com.ccp.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -10,6 +12,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -23,6 +26,14 @@ import java.security.cert.X509Certificate;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    @Value("${cookie.session-token.name}")
+    private String cookieName;
+
+    private final JwtUtil jwtUtil;
+
+    public SecurityConfig(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -35,6 +46,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, cookieName), UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)); // For H2 console
 
         return http.build();
@@ -50,9 +62,15 @@ public class SecurityConfig {
                     try {
                         SSLContext sc = SSLContext.getInstance("TLS");
                         sc.init(null, new TrustManager[]{new X509TrustManager() {
-                            public X509Certificate[] getAcceptedIssuers() { return null; }
-                            public void checkClientTrusted(X509Certificate[] certs, String authType) { }
-                            public void checkServerTrusted(X509Certificate[] certs, String authType) { }
+                            public X509Certificate[] getAcceptedIssuers() {
+                                return null;
+                            }
+
+                            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                            }
+
+                            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                            }
                         }}, new java.security.SecureRandom());
                         ((HttpsURLConnection) connection).setSSLSocketFactory(sc.getSocketFactory());
                     } catch (Exception e) {
