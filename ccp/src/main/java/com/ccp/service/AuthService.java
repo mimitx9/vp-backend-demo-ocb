@@ -81,26 +81,40 @@ public class AuthService {
             throw new RuntimeException("Failed to exchange code for token");
         }
 
-        // 2. Get user info from token
+        // 2. Get user info from token or decode JWT
+        // Có thể sử dụng userInfo hoặc decode JWT token để lấy thông tin
         UserInfoDto userInfo = getUserInfo(tokenResponse.getAccessToken());
         if (userInfo == null || userInfo.getSub() == null) {
             throw new RuntimeException("Failed to get user info");
         }
 
-        // 3. Create or update user
-        User user = createOrUpdateUser(userInfo);
+        // 3. Create user info object (không lưu vào database)
+        User userDetails = User.builder()
+                .ciamId(userInfo.getSub())
+                .username(userInfo.getPreferredUsername())
+                .email(userInfo.getEmail())
+                .firstName(userInfo.getGivenName())
+                .lastName(userInfo.getFamilyName())
+                .lastLogin(LocalDateTime.now())
+                .build();
 
-        // 4. Create session
-        String sessionToken = createSession(user, tokenResponse, request);
+        // 4. Generate JWT token with user info
+        String sessionToken = jwtUtil.generateToken(userDetails);
 
-        // 5. Set session cookie
+        // 5. Set cookie with session token
         setSessionCookie(response, sessionToken);
 
         // 6. Store access token in cache for later use
-        cacheUtil.storeAccessToken(user.getId().toString(), tokenResponse.getAccessToken());
+        cacheUtil.storeAccessToken(userInfo.getSub(), tokenResponse.getAccessToken());
 
-        // 7. Return redirect URL to client
-        return "/dashboard"; // This will be used by the controller to redirect
+        // Nếu bạn cần lưu refresh token
+        if (tokenResponse.getRefreshToken() != null) {
+            // Lưu refresh token vào cache hoặc database session
+            // cacheUtil.storeRefreshToken(userInfo.getSub(), tokenResponse.getRefreshToken());
+        }
+
+        // 7. Return redirect URL
+        return "/dashboard";
     }
 
     /**
