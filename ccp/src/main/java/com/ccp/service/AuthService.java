@@ -19,31 +19,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.apache.http.HttpHost;
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContexts;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-
-import javax.net.ssl.SSLContext;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -143,17 +123,7 @@ public class AuthService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         try {
-            // Tạo một RestTemplate đơn giản bỏ qua xác thực SSL
-            SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-            requestFactory.setConnectTimeout(5000);
-            requestFactory.setReadTimeout(5000);
-
-            // Vô hiệu hóa xác thực SSL trực tiếp ở JVM
-            System.setProperty("javax.net.ssl.trustStore", "NONE");
-
-            RestTemplate sslRestTemplate = new RestTemplate(requestFactory);
-
-            ResponseEntity<TokenResponse> response = sslRestTemplate.postForEntity(tokenUri, request, TokenResponse.class);
+            ResponseEntity<TokenResponse> response = restTemplate.postForEntity(tokenUri, request, TokenResponse.class);
             log.debug("Token exchange response: {}", response.getStatusCode());
             return response.getBody();
         } catch (Exception e) {
