@@ -24,7 +24,23 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
+import org.apache.http.HttpHost;
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContexts;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import javax.net.ssl.SSLContext;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -38,6 +54,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final CacheUtil cacheUtil;
     private final RestTemplate restTemplate;
+    private final TokenService tokenService;
 
     @Value("${spring.security.oauth2.client.provider.ciam.token-uri}")
     private String tokenUri;
@@ -122,7 +139,35 @@ public class AuthService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<TokenResponse> response = restTemplate.postForEntity(tokenUri, request, TokenResponse.class);
+            // Tạo một SslContext mới bỏ qua xác thực
+            TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
+            SSLContext sslContext = SSLContexts.custom()
+                    .loadTrustMaterial(null, acceptingTrustStrategy)
+                    .build();
+            SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+
+            Registry<ConnectionSocketFactory> socketFactoryRegistry =
+                    RegistryBuilder.<ConnectionSocketFactory>create()
+                            .register("https", socketFactory)
+                            .register("http", new PlainConnectionSocketFactory())
+                            .build();
+
+            BasicHttpClientConnectionManager connectionManager =
+                    new BasicHttpClientConnectionManager(socketFactoryRegistry);
+
+            CloseableHttpClient httpClient = HttpClients.custom()
+                    .setSSLSocketFactory(socketFactory)
+                    .setConnectionManager(connectionManager)
+                    .build();
+
+            // Tạo RequestFactory cho RestTemplate
+            HttpComponentsClientHttpRequestFactory requestFactory =
+                    new HttpComponentsClientHttpRequestFactory();
+
+            // Tạo RestTemplate mới với cấu hình SSL tùy chỉnh
+            RestTemplate sslRestTemplate = new RestTemplate(requestFactory);
+
+            ResponseEntity<TokenResponse> response = sslRestTemplate.postForEntity(tokenUri, request, TokenResponse.class);
             log.debug("Token exchange response: {}", response.getStatusCode());
             return response.getBody();
         } catch (Exception e) {
@@ -285,5 +330,23 @@ public class AuthService {
                 });
             }
         }
+    }
+
+    /**
+     * Refresh user session
+     */
+    @Transactional
+    public void refreshUserSession(Long userId, HttpServletRequest request, HttpServletResponse response) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Refresh access token
+        String newAccessToken = tokenService.refreshAccessToken(userId);
+
+        // Generate new session token
+        String newSessionToken = jwtUtil.generateToken(user);
+
+        // Set new session cookie
+        setSessionCookie(response, newSessionToken);
     }
 }

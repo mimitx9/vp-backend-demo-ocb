@@ -32,7 +32,7 @@
       <recent name="com.ocb.service" />
     </key>
   </component>
-  <component name="RunManager" selected="Spring Boot.OcbApplication">
+  <component name="RunManager" selected="Spring Boot.CcpBackendApplication">
     <configuration name="CcpBackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
       <module name="ccp-backend" />

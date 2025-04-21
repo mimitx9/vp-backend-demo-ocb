@@ -139,11 +139,52 @@ public class AuthController {
 
         return ResponseEntity.ok(result);
     }
-        /**
+
+    /**
      * Health check endpoint
      */
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("CCP Auth Service is up and running!");
+    }
+
+    /**
+     * Refresh access token
+     */
+    /**
+     * Refresh access token
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response) {  // Thêm tham số này
+        Cookie[] cookies = request.getCookies();
+        String sessionToken = null;
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookieName.equals(cookie.getName())) {
+                    sessionToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        Map<String, String> result = new HashMap<>();
+        if (sessionToken != null && authService.validateSessionToken(sessionToken)) {
+            Long userId = authService.extractUserIdFromToken(sessionToken);
+            try {
+                authService.refreshUserSession(userId, request, response);
+                result.put("message", "Token refreshed successfully");
+                return ResponseEntity.ok(result);
+            } catch (Exception e) {
+                log.error("Error refreshing token: {}", e.getMessage(), e);
+                result.put("error", "Failed to refresh token");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+            }
+        } else {
+            result.put("error", "Invalid session");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+        }
     }
 }

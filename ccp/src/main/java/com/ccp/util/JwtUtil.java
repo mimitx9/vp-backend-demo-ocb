@@ -106,6 +106,23 @@ public class JwtUtil {
         }
     }
 
+    /**
+     * Check if token is expiring soon (within 5 minutes)
+     */
+    public boolean isTokenExpiringSoon(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            Date expiration = claims.getExpiration();
+            Date now = new Date();
+
+            // Check if token expires within 5 minutes
+            long fiveMinutesInMillis = 5 * 60 * 1000;
+            return expiration.getTime() - now.getTime() < fiveMinutesInMillis;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private boolean isTokenExpired(String token) {
         final Date expiration = extractExpiration(token);
         return expiration.before(new Date());
