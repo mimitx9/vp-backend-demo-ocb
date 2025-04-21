@@ -1,4 +1,4 @@
-package com.ccp.interceptor;
+package com.ccp.config;
 
 import com.ccp.service.AuthService;
 import com.ccp.service.TokenService;
