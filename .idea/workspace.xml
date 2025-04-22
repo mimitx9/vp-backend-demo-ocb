@@ -4,11 +4,34 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="189a4cb5-20c9-43c8-aedd-89c5b667d12c" name="Changes" comment="update" />
+    <list default="true" id="189a4cb5-20c9-43c8-aedd-89c5b667d12c" name="Changes" comment="update">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ccp/src/main/java/com/ccp/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/ccp/src/main/java/com/ccp/model/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ccp/src/main/java/com/ccp/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/ccp/src/main/java/com/ccp/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ccp/src/main/java/com/ccp/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/ccp/src/main/java/com/ccp/service/AuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ccp/src/main/java/com/ccp/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/ccp/src/main/java/com/ccp/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ccp/src/main/resources/data.sql" beforeDir="false" afterPath="$PROJECT_DIR$/ccp/src/main/resources/data.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ccp/src/main/resources/schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/ccp/src/main/resources/schema.sql" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 1
+}]]></component>
+  <component name="ProjectId" id="2w45hgIg6Vj8eW0ePdyAsUnzeDF" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
@@ -16,10 +39,18 @@
     "RequestMappingsPanelOrder1": "1",
     "RequestMappingsPanelWidth0": "75",
     "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
     "Spring Boot.CcpBackendApplication.executor": "Run",
     "Spring Boot.OcbApplication.executor": "Run",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/duc/Downloads/backend-demo-ocb/ocb/src/main/java/com/ocb/controller",
-    "node.js.selected.package.tslint": "(autodetect)"
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -51,8 +82,20 @@
       </method>
     </configuration>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="189a4cb5-20c9-43c8-aedd-89c5b667d12c" name="Changes" comment="update" />
+      <created>1745288126780</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1745288126780</updated>
+      <workItem from="1745288128078" duration="725000" />
+    </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="update" />

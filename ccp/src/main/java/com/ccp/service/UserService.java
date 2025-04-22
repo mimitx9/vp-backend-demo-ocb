@@ -41,8 +41,8 @@ public class UserService {
     /**
      * Get user by CIAM ID
      */
-    public Optional<User> getUserByCiamId(String ciamId) {
-        return userRepository.findByCiamId(ciamId);
+    public Optional<User> getUserByAddress(String address) {
+        return userRepository.findByAddress(address);
     }
 
     /**
@@ -73,7 +73,7 @@ public class UserService {
     /**
      * Check if user exists by CIAM ID
      */
-    public boolean existsByCiamId(String ciamId) {
-        return userRepository.existsByCiamId(ciamId);
+    public boolean existsByAddress(String ciamId) {
+        return userRepository.existsByAddress(ciamId);
     }
 }

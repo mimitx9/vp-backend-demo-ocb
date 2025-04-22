@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL,
     first_name VARCHAR(255),
     last_name VARCHAR(255),
-    ciam_id VARCHAR(255) UNIQUE,
+    address VARCHAR(255) UNIQUE,
     last_login TIMESTAMP,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL

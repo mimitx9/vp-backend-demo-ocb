@@ -87,9 +87,9 @@ public class AuthService {
             throw new RuntimeException("Failed to get user info");
         }
 
-        // 3. Create user info object (không lưu vào database)
+        // 3. Create user info object
         User userDetails = User.builder()
-                .ciamId(userInfo.getSub())
+                .address(userInfo.getSub())
                 .username(userInfo.getPreferredUsername())
                 .email(userInfo.getEmail())
                 .firstName(userInfo.getGivenName())
@@ -160,33 +160,6 @@ public class AuthService {
             log.error("Error getting user info: {}", e.getMessage(), e);
             return null;
         }
-    }
-
-    /**
-     * Create or update user based on user info
-     */
-    private User createOrUpdateUser(UserInfoDto userInfo) {
-        return userRepository.findByCiamId(userInfo.getSub())
-                .map(existingUser -> {
-                    // Update existing user
-                    existingUser.setEmail(userInfo.getEmail());
-                    existingUser.setFirstName(userInfo.getGivenName());
-                    existingUser.setLastName(userInfo.getFamilyName());
-                    existingUser.setLastLogin(LocalDateTime.now());
-                    return userRepository.save(existingUser);
-                })
-                .orElseGet(() -> {
-                    // Create new user
-                    User newUser = User.builder()
-                            .ciamId(userInfo.getSub())
-                            .username(userInfo.getPreferredUsername() != null ? userInfo.getPreferredUsername() : userInfo.getEmail())
-                            .email(userInfo.getEmail())
-                            .firstName(userInfo.getGivenName())
-                            .lastName(userInfo.getFamilyName())
-                            .lastLogin(LocalDateTime.now())
-                            .build();
-                    return userRepository.save(newUser);
-                });
     }
 
     /**

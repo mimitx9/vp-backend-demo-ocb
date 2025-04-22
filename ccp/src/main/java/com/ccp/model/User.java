@@ -32,8 +32,8 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "ciam_id", unique = true)
-    private String ciamId;
+    @Column(name = "address", unique = true)
+    private String address;
 
     @Column(name = "last_login")
     private LocalDateTime lastLogin;

@@ -53,6 +53,7 @@ public class ApiController {
         profile.put("firstName", user.getFirstName());
         profile.put("lastName", user.getLastName());
         profile.put("lastLogin", user.getLastLogin());
+        profile.put("address", user.getAddress());
 
         return ResponseEntity.ok(profile);
     }
