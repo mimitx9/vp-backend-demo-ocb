@@ -18,6 +18,8 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
 
     List<Session> findByUserAndActiveTrue(User user);
 
+    Session findByAccessTokenAndActiveTrue(String accessToken);
+
     @Modifying
     @Query("UPDATE Session s SET s.active = false WHERE s.user = ?1 AND s.sessionId <> ?2")
     void deactivateOtherSessions(User user, String currentSessionId);

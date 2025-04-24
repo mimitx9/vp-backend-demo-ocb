@@ -23,6 +23,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -75,37 +76,39 @@ public class AuthService {
      */
     @Transactional
     public String handleAuthorizationCallback(String code, String redirectUri, HttpServletRequest request, HttpServletResponse response) {
-        // 1. Exchange code for token
+        // Exchange code for token
         TokenResponse tokenResponse = exchangeCodeForToken(code, redirectUri);
         if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
             throw new RuntimeException("Failed to exchange code for token");
         }
 
-        // 2. Get user info from token
+        // Get user info from token
         UserInfoDto userInfo = getUserInfo(tokenResponse.getAccessToken());
         if (userInfo == null || userInfo.getPreferredUsername() == null) {
             throw new RuntimeException("Failed to get user info");
         }
 
-        // 3. Create user info object
-        User userDetails = User.builder()
-                .address(userInfo.getSub())
-                .username(userInfo.getPreferredUsername())
-                .email(userInfo.getEmail())
-                .firstName(userInfo.getGivenName())
-                .lastName(userInfo.getFamilyName())
-                .build();
+        // Create user info object
+        User userDetails = userRepository.findByUsername(userInfo.getPreferredUsername())
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setUsername(userInfo.getPreferredUsername());
+                    newUser.setEmail(userInfo.getEmail());
+                    newUser.setFirstName(userInfo.getGivenName());
+                    newUser.setLastName(userInfo.getFamilyName());
+                    return userRepository.save(newUser);
+                });
 
-        // 4. Generate JWT token with user info
-        String sessionToken = jwtUtil.generateToken(userDetails);
+        // Tạo session và lưu vào cơ sở dữ liệu
+        String sessionToken = createSession(userDetails, tokenResponse, request);
 
-        // 5. Set cookie with session token
+        // Set cookie with session token
         setSessionCookie(response, sessionToken);
 
-        // 6. Store access token in cache for later use
+        // Store access token in cache for later use
         cacheUtil.storeAccessToken(userInfo.getPreferredUsername(), tokenResponse.getAccessToken());
 
-        // 7. Return redirect URL
+        // Return redirect URL
         return "/dashboard";
     }
 
@@ -189,10 +192,6 @@ public class AuthService {
                 .build();
 
         sessionRepository.save(session);
-
-        // Optionally deactivate other sessions for this user
-        // sessionRepository.deactivateOtherSessions(user, session.getSessionId());
-
         return sessionToken;
     }
 
@@ -245,11 +244,22 @@ public class AuthService {
     public void logout(String sessionToken, HttpServletResponse response) {
         if (sessionToken != null && jwtUtil.validateToken(sessionToken)) {
             String userId = jwtUtil.extractUsername(sessionToken);
+            User user = userRepository.findByUsername(userId).orElse(null);
+            if (user != null) {
+                List<Session> activeSessions = sessionRepository.findByUserAndActiveTrue(user);
+                for (Session session : activeSessions) {
+                    String accessToken = session.getAccessToken();
+                    String refreshToken = session.getRefreshToken();
+                    if (accessToken != null && refreshToken != null) {
+                        logoutFromKeycloak(accessToken, refreshToken); // Gửi cả refreshToken
+                    }
+                    session.setActive(false);
+                    sessionRepository.save(session);
+                }
+            }
 
-            // Invalidate access token in cache
-            cacheUtil.invalidateAccessToken(userId.toString());
+            cacheUtil.invalidateAccessToken(userId);
 
-            // Invalidate session cookie
             Cookie cookie = new Cookie(cookieName, null);
             cookie.setMaxAge(0);
             cookie.setPath(cookiePath);
@@ -259,16 +269,41 @@ public class AuthService {
             }
 
             response.addCookie(cookie);
+        }
+    }
 
-            // Mark session as inactive in database
-            User user = userRepository.findByUsername(userId).orElse(null);
-            if (user != null) {
-                // Instead of trying to find the exact session, we can just invalidate all active sessions
-                sessionRepository.findByUserAndActiveTrue(user).forEach(session -> {
-                    session.setActive(false);
-                    sessionRepository.save(session);
-                });
+    private void logoutFromKeycloak(String accessToken, String refreshToken) {
+        try {
+            // Lấy session từ accessToken
+            Session session = sessionRepository.findByAccessTokenAndActiveTrue(accessToken);
+            if (session == null || session.getRefreshToken() == null) {
+                log.warn("No active session or refresh token found for access token: {}", accessToken);
+                return;
             }
+            refreshToken = session.getRefreshToken();
+
+            String baseUrl = tokenUri.substring(0, tokenUri.lastIndexOf("/token"));
+            String logoutUrl = baseUrl + "/logout";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("client_id", clientId);
+            body.add("client_secret", clientSecret);
+            body.add("refresh_token", refreshToken); // Sử dụng refresh_token
+
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(logoutUrl, request, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Successfully logged out from Keycloak. Response: {}", response.getBody());
+            } else {
+                log.warn("Failed to logout from Keycloak: {}. Response: {}", response.getStatusCode(), response.getBody());
+            }
+        } catch (Exception e) {
+            log.error("Error logging out from Keycloak: {}", e.getMessage(), e);
         }
     }
 
